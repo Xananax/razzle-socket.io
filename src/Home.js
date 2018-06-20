@@ -1,8 +1,22 @@
 import React from 'react';
 import logo from './react.svg';
+import io from 'socket.io-client'
 import './Home.css';
 
 class Home extends React.Component {
+  state = { value:'', messages:[] }
+  componentDidMount(){
+    this.socket = io()
+    this.socket.on('message', this.onReceiveMessage)
+  }
+  onReceiveMessage = (message) => this.setState({messages:[...this.state.messages,message]})
+  sendMessage = (message) => this.socket.emit('message',message)
+  onChange = ({target:{value}}) => this.setState({value})
+  onKeyDown = ({keyCode}) => keyCode === 13 ? this.onSubmit() : null
+  onSubmit = () => {
+    this.sendMessage(this.state.value)
+    this.setState({value:''})
+  }
   render() {
     return (
       <div className="Home">
@@ -25,6 +39,10 @@ class Home extends React.Component {
             <a href="https://palmer.chat">Community Slack</a>
           </li>
         </ul>
+        <div>
+          <div style={{textAlign:'left'}}>{ this.state.messages.map((m,i)=><li key={i}>{m}</li>)}</div>
+          <input type="text" value={this.state.value} onChange={this.onChange} onKeyDown={this.onKeyDown}/>
+        </div>
       </div>
     );
   }

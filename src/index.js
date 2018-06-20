@@ -1,9 +1,18 @@
 import app from './server';
 import http from 'http';
+import SocketIO from 'socket.io'
 
 const server = http.createServer(app);
-
+const io = SocketIO(server)
 let currentApp = app;
+
+io.on('connection', function(socket){
+  console.log('a user connected');
+  socket.on('message', value => {
+    console.log('message',value)
+    io.emit('message',value)
+  })
+});
 
 server.listen(process.env.PORT || 3000, error => {
   if (error) {

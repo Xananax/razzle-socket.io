@@ -1,27 +1,54 @@
 import app from './server';
-import http from 'http';
-import './socketServer';
+import ioHandler from './socket';
+import { Server } from 'http';
+import SocketIO from 'socket.io'
 
-const server = http.createServer(app);
-let currentApp = app;
+const port = process.env.PORT || 3000
 
-server.listen(process.env.PORT || 3000, error => {
-  if (error) {
-    console.log(error);
-  }
+let server;
+let currentApp;
+let io;
 
-  console.log('🚀 started');
-});
+const stop = (cb) => {
+  if(!server){ return cb()}
+  console.log('stopping the server')
+  currentApp = null
+  console.log('sdfdsfdf')
+  io.close( err => {
+    console.log('server closed')
+    if(err){ console.error(err.message) }
+    server = null
+    io = null
+    return cb()
+  })
+}
+
+const start = ( newApp, newIoHandler ) => {
+  console.log('starting the server')
+  server = Server(newApp);
+  currentApp = newApp;
+  io = SocketIO(server)
+  newIoHandler(io)
+  server.listen( port, error => {
+      if (error) { throw error }
+      console.log(`🚀 started on ${port}`);
+  })
+}
+
+const restart = ( app, socket ) => stop( () => {
+  console.log('server stopped')
+  start(app, socket)
+})
 
 if (module.hot) {
   console.log('✅  Server-side HMR Enabled!');
 
-  module.hot.accept(['./server','./socketServer'], () => {
-    console.log('🔁  HMR Reloading `./server`...');
-    server.removeListener('request', currentApp);
+  module.hot.accept(['./server','./socket'], () => {
+    console.log('🔁  HMR Reloading...');
     const newApp = require('./server').default;
-    const newSocket = require('./socketServer').default;
-    server.on('request', newApp);
-    currentApp = newApp;
+    const newIoHandler = require('./socket').default;
+    restart( newApp, newIoHandler )
   });
 }
+
+start(app, ioHandler)

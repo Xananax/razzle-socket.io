@@ -3,12 +3,12 @@ import logo from './react.svg';
 import io from 'socket.io-client'
 import './Home.css';
 
-const socketPort = (process.env.RAZZLE_SOCKET_PORT || parseInt( process.env.PORT ||  3000, 10 ) + 10 )
+// const socketPort = (process.env.RAZZLE_SOCKET_PORT || parseInt( process.env.PORT ||  3000, 10 ) + 10 )
 
 class Home extends React.Component {
   state = { value:'', messages:[] }
   componentDidMount(){
-    const socket = io(`${window.location.protocol}//${window.location.hostname}:${socketPort}`)
+    const socket = io()
     socket.on('message', (message) => this.setState({messages:[...this.state.messages,message]}))
   
     const sendMessage = (message) => socket.emit('message',message)

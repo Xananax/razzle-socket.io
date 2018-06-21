@@ -46,3 +46,11 @@ Error: bind EADDRINUSE null:3010
 ```
 
 The server doesn't close
+
+## Attempt 3 - Handle the HMR logic
+
+This works. The keys:
+
+- You need to restart the server
+- You need to close all keep-alive connections (using `io.close()` instead of `server.close()` seems to take care of this). Without this, the server won't actually restart
+- You need to re-attach the socket.io handler as well as the express app

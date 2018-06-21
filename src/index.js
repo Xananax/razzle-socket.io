@@ -1,18 +1,9 @@
 import app from './server';
 import http from 'http';
-import SocketIO from 'socket.io'
+import './socketServer';
 
 const server = http.createServer(app);
-const io = SocketIO(server)
 let currentApp = app;
-
-io.on('connection', function(socket){
-  console.log('a user connected');
-  socket.on('message', value => {
-    console.log('message',value)
-    io.emit('message',value)
-  })
-});
 
 server.listen(process.env.PORT || 3000, error => {
   if (error) {
@@ -25,10 +16,11 @@ server.listen(process.env.PORT || 3000, error => {
 if (module.hot) {
   console.log('✅  Server-side HMR Enabled!');
 
-  module.hot.accept('./server', () => {
+  module.hot.accept(['./server','./socketServer'], () => {
     console.log('🔁  HMR Reloading `./server`...');
     server.removeListener('request', currentApp);
     const newApp = require('./server').default;
+    const newSocket = require('./socketServer').default;
     server.on('request', newApp);
     currentApp = newApp;
   });

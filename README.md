@@ -2,7 +2,7 @@
 
 ## Attempt 1 - Naive implementation
 
-Just following the tutorial. End up with:
+Just following the socket.io tutorial. End up with:
 
 ```
 Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
@@ -26,3 +26,23 @@ Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the cli
     at Layer.handle [as handle_request] (~/projects/razzle-sockets/node_modules/.registry.npmjs.org/express/4.16.3/node_modules/express/lib/router/layer.js:95:5)
     at ~/projects/razzle-sockets/node_modules/.registry.npmjs.org/express/4.16.3/node_modules/express/lib/router/index.js:281:22
 ```
+
+## Attempt 2 - Put sockets in their on server
+
+create a different file with a different server, listening on a different port
+
+Works, but any change to index.js, where the sockets reside ends up with:
+
+```
+Error: bind EADDRINUSE null:3010
+    at listenOnMasterHandle (net.js:1394:16)
+    at rr (internal/cluster/child.js:121:12)
+    at Worker.send (internal/cluster/child.js:88:7)
+    at process.onInternalMessage (internal/cluster/utils.js:42:8)
+    at process.emit (events.js:187:15)
+    at process.emit (~/projects/razzle-sockets/node_modules/.registry.npmjs.org/source-map-support/0.5.6/node_modules/source-map-support/source-map-support.js:454:21)
+    at emit (internal/child_process.js:811:12)
+    at process._tickCallback (internal/process/next_tick.js:63:19)
+```
+
+The server doesn't close

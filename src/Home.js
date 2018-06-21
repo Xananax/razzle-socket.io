@@ -3,19 +3,24 @@ import logo from './react.svg';
 import io from 'socket.io-client'
 import './Home.css';
 
+const socketPort = (process.env.RAZZLE_SOCKET_PORT || parseInt( process.env.PORT ||  3000, 10 ) + 10 )
+
 class Home extends React.Component {
   state = { value:'', messages:[] }
   componentDidMount(){
-    this.socket = io()
-    this.socket.on('message', this.onReceiveMessage)
-  }
-  onReceiveMessage = (message) => this.setState({messages:[...this.state.messages,message]})
-  sendMessage = (message) => this.socket.emit('message',message)
-  onChange = ({target:{value}}) => this.setState({value})
-  onKeyDown = ({keyCode}) => keyCode === 13 ? this.onSubmit() : null
-  onSubmit = () => {
-    this.sendMessage(this.state.value)
-    this.setState({value:''})
+    const socket = io(`${window.location.protocol}//${window.location.hostname}:${socketPort}`)
+    socket.on('message', (message) => this.setState({messages:[...this.state.messages,message]}))
+  
+    const sendMessage = (message) => socket.emit('message',message)
+
+    const onSubmit = () => {
+      sendMessage(this.state.value)
+      this.setState({value:''})
+    }
+
+    this.onChange = ({target:{value}}) => this.setState({value})
+    this.onKeyDown = ({keyCode}) => keyCode === 13 ? onSubmit() : null
+    this.forceUpdate()
   }
   render() {
     return (
@@ -40,7 +45,7 @@ class Home extends React.Component {
           </li>
         </ul>
         <div>
-          <div style={{textAlign:'left'}}>{ this.state.messages.map((m,i)=><li key={i}>{m}</li>)}</div>
+          <div>{ this.state.messages.map((m,i)=><li key={i}>{m}</li>)}</div>
           <input type="text" value={this.state.value} onChange={this.onChange} onKeyDown={this.onKeyDown}/>
         </div>
       </div>

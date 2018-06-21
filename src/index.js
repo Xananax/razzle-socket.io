@@ -9,13 +9,18 @@ let server;
 let currentApp;
 let io;
 
+/**
+ * Stops the server
+ * @param {function} cb a callback to run when the server has closed 
+ */
 const stop = (cb) => {
   if(!server){ return cb()}
   console.log('stopping the server')
   currentApp = null
-  console.log('sdfdsfdf')
+  // we use io.close rather than server.close because
+  // server.close will wait for all sockets to disconnect
+  // whereas io.close forcefully closes
   io.close( err => {
-    console.log('server closed')
     if(err){ console.error(err.message) }
     server = null
     io = null
@@ -23,6 +28,11 @@ const stop = (cb) => {
   })
 }
 
+/**
+ * Starts the server
+ * @param {requestHandler} newApp the main request handler, typically an express app 
+ * @param {ioHandler} newIoHandler a function that will receive the socket.io instance (usually named `io`)
+ */
 const start = ( newApp, newIoHandler ) => {
   console.log('starting the server')
   server = Server(newApp);
@@ -35,9 +45,14 @@ const start = ( newApp, newIoHandler ) => {
   })
 }
 
-const restart = ( app, socket ) => stop( () => {
+/**
+ * Stops, then starts the server
+ * @param {requestHandler} newApp the main request handler, typically an express app 
+ * @param {ioHandler} newIoHandler a function that will receive the socket.io instance (usually named `io`)
+ */
+const restart = ( newApp, newIoHandler ) => stop( () => {
   console.log('server stopped')
-  start(app, socket)
+  start(newApp, newIoHandler)
 })
 
 if (module.hot) {

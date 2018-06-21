@@ -3,12 +3,14 @@ import logo from './react.svg';
 import io from 'socket.io-client'
 import './Home.css';
 
-// const socketPort = (process.env.RAZZLE_SOCKET_PORT || parseInt( process.env.PORT ||  3000, 10 ) + 10 )
+const Message = ({text}) => <li>{text}</li>
 
 class Home extends React.Component {
-  state = { value:'', messages:[] }
+  state = { value:'', messages:[], mounted:false }
   componentDidMount(){
+
     const socket = io()
+
     socket.on('message', (message) => this.setState({messages:[...this.state.messages,message]}))
   
     const sendMessage = (message) => socket.emit('message',message)
@@ -20,9 +22,12 @@ class Home extends React.Component {
 
     this.onChange = ({target:{value}}) => this.setState({value})
     this.onKeyDown = ({keyCode}) => keyCode === 13 ? onSubmit() : null
-    this.forceUpdate()
+    
+    this.setState({mounted:true})
   }
   render() {
+    const { messages, value } = this.state
+    const { onChange, onKeyDown } = this
     return (
       <div className="Home">
         <div className="Home-header">
@@ -45,8 +50,8 @@ class Home extends React.Component {
           </li>
         </ul>
         <div>
-          <div>{ this.state.messages.map((m,i)=><li key={i}>{m}</li>)}</div>
-          <input type="text" value={this.state.value} onChange={this.onChange} onKeyDown={this.onKeyDown}/>
+          <ul>{ messages.map((text,i)=><Message key={i} text={text}/>)}</ul>
+          <input type="text" value={value} onChange={onChange} onKeyDown={onKeyDown}/>
         </div>
       </div>
     );

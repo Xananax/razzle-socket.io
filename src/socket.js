@@ -5,7 +5,7 @@ export default (io) => {
         const userId = userIds++
         console.log(`user ${userId} connected`);
         socket.on('message', value => {
-            console.log(`message [${userId}]:"${value}"`)
+            console.log(`${userId}:"${value}"`)
             io.emit('message',value)
         })
     });
